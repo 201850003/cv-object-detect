@@ -1,0 +1,11 @@
+# Ignore .idea folder (IDE specific files)
+.idea/
+
+# Ignore data folder
+data/
+
+# Ignore .docx files
+*.docx
+
+# Ignore .mp4 files
+*.mp4
