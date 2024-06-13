@@ -146,8 +146,8 @@ def main():
             tracker.tracked_boxes = []
             box_dict = detect(frame)  # res dict
             face_box = box_dict.get('face')
-            cup_box = flatten_boxes(box_dict.get('cup'))
-            razor_box = flatten_boxes(box_dict.get('razor'))
+            cup_box = box_dict.get('cup')
+            razor_box = box_dict.get('razor')
 
             tracker.add_new_trackers(frame, face_box)
             tracker.add_new_trackers(frame, cup_box)

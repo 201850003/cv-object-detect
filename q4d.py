@@ -165,30 +165,43 @@ def detect(test_image):
     # plt.show()
 
     # 整合所有检测结果
-    all_matches = []
-    all_matches.extend([(x, y, w, h) for (x, y, w, h) in faces])  # 人脸检测结果
-    for match_set in [cup_front_matches, cup_up_matches, cup_move_matches, cup_down_matches, cup_incline_matches,
-                  cup_incline_move_matches, cup_incline_up_matches, cup_incline_down_matches, cup_move_quick_matches,
-                      razor_front_matches, razor_up_matches, razor_incline_matches, razor_incline_up_matches]:
-        all_matches.extend([(x1, y1, x2 - x1, y2 - y1) for (x1, y1, x2, y2, _) in match_set])
+    # all_matches = []
+    # all_matches.extend([(x, y, w, h) for (x, y, w, h) in faces])  # 人脸检测结果
+    # for match_set in [cup_front_matches, cup_up_matches, cup_move_matches, cup_down_matches, cup_incline_matches,
+    #               cup_incline_move_matches, cup_incline_up_matches, cup_incline_down_matches, cup_move_quick_matches,
+    #                   razor_front_matches, razor_up_matches, razor_incline_matches, razor_incline_up_matches]:
+    #     all_matches.extend([(x1, y1, x2 - x1, y2 - y1) for (x1, y1, x2, y2, _) in match_set])
 
     face_match_res = []
     cup_match_res = []
+    cup_match_res_final = []
     razor_match_res = []
+    razor_match_res_final = []
 
     face_match_res.extend([(x, y, w, h) for (x, y, w, h) in faces])
 
     for match_set in [cup_front_matches, cup_up_matches, cup_move_matches, cup_down_matches, cup_incline_matches,
                       cup_incline_move_matches, cup_incline_up_matches, cup_incline_down_matches,
                       cup_move_quick_matches]:
-        cup_match_res.append([(x1, y1, x2 - x1, y2 - y1) for (x1, y1, x2, y2, _) in match_set])
+        cup_match_res.extend([(x1, y1, x2, y2, _) for (x1, y1, x2, y2, _) in match_set])
     for match_set in [razor_front_matches, razor_up_matches, razor_incline_matches, razor_incline_up_matches]:
-        razor_match_res.append([(x1, y1, x2 - x1, y2 - y1) for (x1, y1, x2, y2, _) in match_set])
+        razor_match_res.extend([(x1, y1, x2, y2, _) for (x1, y1, x2, y2, _) in match_set])
+
+    if len(cup_match_res)>0:
+        cup_match_res = np.array(cup_match_res)
+        cup_match_res = non_max_suppression(cup_match_res)
+
+    if len(razor_match_res)>0:
+        razor_match_res = np.array(razor_match_res)
+        razor_match_res = non_max_suppression(razor_match_res)
+
+    cup_match_res_final.extend([(x1, y1, x2 - x1, y2 - y1) for (x1, y1, x2, y2, _) in cup_match_res])
+    razor_match_res_final.extend([(x1, y1, x2 - x1, y2 - y1) for (x1, y1, x2, y2, _) in razor_match_res])
 
     res_dict = {
         'face':face_match_res,
-        'cup':cup_match_res,
-        'razor':razor_match_res
+        'cup':cup_match_res_final,
+        'razor':razor_match_res_final
     }
 
     return res_dict
