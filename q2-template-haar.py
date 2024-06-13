@@ -10,17 +10,40 @@ face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_fronta
 cup_front_template_path = 'data/templates/cup-front.png'
 cup_up_template_path = 'data/templates/cup-up.png'
 cup_move_template_path = 'data/templates/cup-move.png'
+cup_down_template_path = 'data/templates/cup-down.png'
+cup_incline_template_path = 'data/templates/cup-incline.png'
+cup_incline_move_template_path = 'data/templates/cup-incline-move.png'
+cup_incline_up_template_path = 'data/templates/cup-incline-up.png'
+cup_incline_down_template_path = 'data/templates/cup-incline-down.png'
+cup_move_quick_template_path = 'data/templates/cup-move-quick.png'
+
 razor_front_template_path = 'data/templates/razor-front.png'
 razor_incline_template_path = 'data/templates/razor-up.png'
 razor_up_template_path = 'data/templates/razor-incline.png'
+razor_incline_up_template_path = 'data/templates/razor-incline-up.png'
 
 # 加载模板图像
 cup_front_template = cv2.imread(cup_front_template_path, cv2.IMREAD_GRAYSCALE)
 cup_up_template = cv2.imread(cup_up_template_path, cv2.IMREAD_GRAYSCALE)
 cup_move_template = cv2.imread(cup_move_template_path, cv2.IMREAD_GRAYSCALE)
+cup_down_template = cv2.imread(cup_down_template_path, cv2.IMREAD_GRAYSCALE)
+cup_incline_template = cv2.imread(cup_incline_template_path, cv2.IMREAD_GRAYSCALE)
+cup_incline_move_template = cv2.imread(cup_incline_move_template_path, cv2.IMREAD_GRAYSCALE)
+cup_incline_up_template = cv2.imread(cup_incline_up_template_path, cv2.IMREAD_GRAYSCALE)
+cup_incline_down_template = cv2.imread(cup_incline_down_template_path, cv2.IMREAD_GRAYSCALE)
+cup_move_quick_template = cv2.imread(cup_move_quick_template_path, cv2.IMREAD_GRAYSCALE)
+
 razor_front_template = cv2.imread(razor_front_template_path, cv2.IMREAD_GRAYSCALE)
 razor_incline_template = cv2.imread(razor_incline_template_path, cv2.IMREAD_GRAYSCALE)
 razor_up_template = cv2.imread(razor_up_template_path, cv2.IMREAD_GRAYSCALE)
+razor_incline_up_template = cv2.imread(razor_incline_up_template_path, cv2.IMREAD_GRAYSCALE)
+
+# 待检测图像的目录
+test_image_dir = 'data/q1-frame'
+output_dir = 'data/outframe'
+
+# 创建输出目录（如果不存在）
+os.makedirs(output_dir, exist_ok=True)
 
 
 # 定义目标检测函数（Haar级联分类器）
@@ -91,12 +114,7 @@ def multi_scale_template_matching(image, template, threshold=0.7, scale_range=(0
     return matches
 
 
-# 待检测图像的目录
-test_image_dir = 'data/q1-frame'
-output_dir = 'data/outframe'
 
-# 创建输出目录（如果不存在）
-os.makedirs(output_dir, exist_ok=True)
 
 # 遍历待检测图像并进行目标检测
 for test_img_file in os.listdir(test_image_dir):
@@ -108,30 +126,42 @@ for test_img_file in os.listdir(test_image_dir):
         faces = detect_faces(test_image, face_cascade)
 
         # 多尺度模板匹配水杯
+        threshold_second = 0.8
         cup_front_matches = multi_scale_template_matching(test_image, cup_front_template)
         cup_up_matches = multi_scale_template_matching(test_image, cup_up_template)
         cup_move_matches = multi_scale_template_matching(test_image, cup_move_template)
+        cup_down_matches = multi_scale_template_matching(test_image, cup_down_template, threshold_second)
+        cup_incline_matches = multi_scale_template_matching(test_image, cup_incline_template,threshold_second)
+        cup_incline_move_matches = multi_scale_template_matching(test_image, cup_incline_move_template,threshold_second)
+        cup_incline_up_matches = multi_scale_template_matching(test_image, cup_incline_up_template,threshold_second)
+        cup_incline_down_matches = multi_scale_template_matching(test_image, cup_incline_down_template,threshold_second)
+        cup_move_quick_matches = multi_scale_template_matching(test_image, cup_move_quick_template,threshold_second)
 
         # 多尺度模板匹配书本
         razor_front_matches = multi_scale_template_matching(test_image, razor_front_template)
         razor_incline_matches = multi_scale_template_matching(test_image, razor_incline_template)
         razor_up_matches = multi_scale_template_matching(test_image, razor_up_template)
+        razor_incline_up_matches = multi_scale_template_matching(test_image, razor_incline_up_template)
 
         # 绘制人脸边界框
         for (x, y, w, h) in faces:
             cv2.rectangle(test_image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            cv2.putText(test_image, 'face', (x, y), cv2.FONT_HERSHEY_COMPLEX, 2, (0, 255, 0), 2)
 
         # 绘制水杯边界框
-        for match in [cup_front_matches, cup_up_matches, cup_move_matches]:
+        for match in [cup_front_matches, cup_up_matches, cup_move_matches,cup_down_matches,cup_incline_matches,
+                      cup_incline_move_matches,cup_incline_up_matches,cup_incline_down_matches,cup_move_quick_matches]:
             if match.size > 0:
                 for (x1, y1, x2, y2, _) in match:
                     cv2.rectangle(test_image, (x1, y1), (x2, y2), (255, 0, 0), 2)
+                    cv2.putText(test_image, 'cup', (x1, y1), cv2.FONT_HERSHEY_COMPLEX, 2, (0, 255, 0), 2)
 
-        # 绘制书本边界框
-        for match in [razor_front_matches, razor_up_matches, razor_incline_matches]:
+        # 绘制刮胡刀边界框
+        for match in [razor_front_matches, razor_up_matches, razor_incline_matches,razor_incline_up_matches]:
             if match.size > 0:
                 for (x1, y1, x2, y2, _) in match:
                     cv2.rectangle(test_image, (x1, y1), (x2, y2), (0, 0, 255), 2)
+                    cv2.putText(test_image, 'razor', (x1, y1), cv2.FONT_HERSHEY_COMPLEX, 2, (0, 255, 0), 2)
 
         # 保存结果图像
         output_img_path = os.path.join(output_dir, test_img_file)
